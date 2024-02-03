@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.release.json",
+    "build": "rm -rf ./lib && tsc -p tsconfig.release.json",
     "start": "ts-node src/playground",
     "test": "jest --runInBand",
     "test:approve": "jest --runInBand --updateSnapshot",

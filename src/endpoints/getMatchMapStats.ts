@@ -92,6 +92,7 @@ export interface FullMatchMapStats {
   event: Event
   overview: MapStatsOverview
   roundHistory: RoundOutcome[]
+  overtimeHistory: RoundOutcome[]
   playerStats: {
     team1: PlayerStats[]
     team2: PlayerStats[]
@@ -155,6 +156,7 @@ export const getMatchMapStats =
     }
 
     const roundHistory = getRoundHistory(m$, team1, team2)
+    const overtimeHistory = getRoundHistory(m$, team1, team2, true)
     const overview = getStatsOverview(m$)
     const playerStats = getPlayerStats(m$, p$)
     const performanceOverview = getPerformanceOverview(p$)
@@ -173,6 +175,7 @@ export const getMatchMapStats =
       event,
       overview,
       roundHistory,
+      overtimeHistory,
       playerStats,
       performanceOverview
     }
@@ -208,20 +211,21 @@ export function getOverviewPropertyFromLabel(
 function getRoundHistory(
   $: HLTVPage,
   team1: Team,
-  team2: Team
+  team2: Team,
+  isOvertime = false
 ): RoundOutcome[] {
   const getOutcome = (el: HLTVPageElement) => ({
     outcome: el.attr('src').split('/').pop()?.split('.')[0]!,
     score: el.attr('title')
   })
 
-  const team1Outcomes = $('.round-history-team-row')
-    .first()
+  const outcomes = $('.round-history-team-row').toArray()
+
+  const team1Outcomes = outcomes[isOvertime ? 2 : 0]
     .find('.round-history-outcome')
     .toArray()
     .map(getOutcome)
-  const team2Outcomes = $('.round-history-team-row')
-    .last()
+  const team2Outcomes = outcomes[isOvertime ? 3 : 1]
     .find('.round-history-outcome')
     .toArray()
     .map(getOutcome)
@@ -233,6 +237,10 @@ function getRoundHistory(
 
   return Array.from(Array(team1Outcomes.length))
     .map((_, i) => {
+      if (!team1Outcomes[i] || !team2Outcomes[i]) {
+        return null
+      }
+
       if (
         team1Outcomes[i].outcome === 'emptyHistory' &&
         team2Outcomes[i].outcome === 'emptyHistory'

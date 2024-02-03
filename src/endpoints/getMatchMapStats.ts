@@ -221,6 +221,10 @@ function getRoundHistory(
 
   const outcomes = $('.round-history-team-row').toArray()
 
+  if (isOvertime && outcomes.length === 2) {
+    return []
+  }
+
   const team1Outcomes = outcomes[isOvertime ? 2 : 0]
     .find('.round-history-outcome')
     .toArray()

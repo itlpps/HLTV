@@ -3,7 +3,7 @@ import { HLTVPage, HLTVPageElement, HLTVScraper } from '../scraper'
 import { fromMapName, GameMap } from '../shared/GameMap'
 import { Team } from '../shared/Team'
 import { Event } from '../shared/Event'
-import { fetchPage, getIdAt, notNull, parseNumber } from '../utils'
+import { fetchPage, getIdAt, notNull, parseNumber, sleep } from '../utils'
 import { Player } from '../shared/Player'
 
 export interface PlayerStats {
@@ -103,16 +103,19 @@ export interface FullMatchMapStats {
 export const getMatchMapStats =
   (config: HLTVConfig) =>
   async ({ id }: { id: number }): Promise<FullMatchMapStats> => {
-    const [m$, p$] = await Promise.all([
-      fetchPage(
-        `https://www.hltv.org/stats/matches/mapstatsid/${id}/-`,
-        config.loadPage
-      ).then(HLTVScraper),
+    const m$ = await fetchPage(
+      `https://www.hltv.org/stats/matches/mapstatsid/${id}/-`,
+      config.loadPage
+    ).then(HLTVScraper)
+
+    await sleep(1000)
+
+    const p$ = await
       fetchPage(
         `https://www.hltv.org/stats/matches/performance/mapstatsid/${id}/-`,
         config.loadPage
       ).then(HLTVScraper)
-    ])
+
 
     const matchId = m$('.match-page-link').attrThen('href', getIdAt(2))!
     const halfsString = m$('.match-info-row .right').eq(0).text()
